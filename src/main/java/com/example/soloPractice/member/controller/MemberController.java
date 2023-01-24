@@ -1,5 +1,7 @@
-package com.example.soloPractice.member;
+package com.example.soloPractice.member.controller;
 
+import com.example.soloPractice.member.dto.MemberPatchDto;
+import com.example.soloPractice.member.dto.MemberPostDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,16 +14,19 @@ import java.util.Map;
 @RequestMapping("/v1/members") //클라이언트의 요청과 클라이언트의 요청을 처리하는 핸들러 메서드를 매핑해줌
 public class MemberController {
     @PostMapping
-    public ResponseEntity postMember(@RequestParam("email")String  email,
-                             @RequestParam("name")String name,
-                             @RequestParam("phone")String phone) {
-        Map<String, String> map = new HashMap<>();
-        map.put("email", email);
-        map.put("name", name);
-        map.put("phone", phone);
-
-        return new ResponseEntity<>(map, HttpStatus.CREATED);
+    public ResponseEntity postMember(@RequestBody MemberPostDto memberPostDto) {
+        return new ResponseEntity<>(memberPostDto, HttpStatus.CREATED);
     }
+
+    @PatchMapping("/{member-id}")
+    public ResponseEntity patchMember(@PathVariable("member-id") long memberId,
+                                      @RequestBody MemberPatchDto memberPatchDto){
+        memberPatchDto.setMemberId(memberId);
+        memberPatchDto.setName("홍길동");
+
+        return new ResponseEntity<>(memberPatchDto, HttpStatus.OK);
+    }
+
 
     @GetMapping("/{member-id}")
     public ResponseEntity getMember(@PathVariable("member-id") long memberId) {
@@ -35,5 +40,10 @@ public class MemberController {
         System.out.println("# get Members");
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{member-id}")
+    public ResponseEntity deleteMember(@PathVariable("member-id") long memberId) {
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }
