@@ -1,9 +1,17 @@
 package com.example.soloPractice.coffee.dto;
 
+import com.example.soloPractice.validator.NotSpace;
+import org.hibernate.validator.constraints.Range;
+
+import javax.validation.constraints.Pattern;
+
 public class CoffeePatchDto {
     private long coffeeId;
+    @NotSpace(message = "커피명(한글)은 공백이 아니어야 합니다.")
     private String korName;
+    @Pattern(regexp = "^([A-Za-z])(\\s?[A-Za-z])*$", message = "커피명(영문)은 영문이어야 합니다. 예) Cafe Latte")
     private String engName;
+    @Range(min= 100, max= 50000)
     private int price;
 
     public long getCoffeeId() {
