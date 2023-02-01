@@ -31,6 +31,6 @@ public class MemberService {
     }
 
     public Member deleteMember(long memberId) {
-
+        return null;
     }
 }

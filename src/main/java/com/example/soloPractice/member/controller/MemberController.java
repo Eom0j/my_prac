@@ -2,7 +2,9 @@ package com.example.soloPractice.member.controller;
 
 import com.example.soloPractice.member.dto.MemberPatchDto;
 import com.example.soloPractice.member.dto.MemberPostDto;
+import com.example.soloPractice.member.dto.MemberResponseDto;
 import com.example.soloPractice.member.entity.Member;
+import com.example.soloPractice.member.mapper.MemberMapper;
 import com.example.soloPractice.member.service.MemberService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ import javax.validation.constraints.Positive;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController //해당 클래스가 REST API의 리소스를 처리하기 위한 API 엔드포인트로 동작함을 정의
 @RequestMapping("/v1/members") //클라이언트의 요청과 클라이언트의 요청을 처리하는 핸들러 메서드를 매핑해줌
@@ -23,22 +26,22 @@ import java.util.Map;
 public class MemberController {
 
     private final MemberService memberService;
+    private final MemberMapper mapper;
 
-    public MemberController(MemberService memberService) {
+    public MemberController(MemberService memberService, MemberMapper mapper) {
         this.memberService = memberService;
+        this.mapper = mapper;
     }
 
     @PostMapping
-    public ResponseEntity postMember(@Valid @RequestBody MemberPostDto memberPostDto) {
-        Member member = new Member();
+    public ResponseEntity postMember(@Valid @RequestBody MemberPostDto memberDto) {
+        Member member = mapper.memberPostDtoToMember(memberDto);
 
-        member.setEmail(memberPostDto.getEmail());
-        member.setName(memberPostDto.getName());
-        member.setPhone(memberPostDto.getPhone());
+
 
         Member response = memberService.createMember(member);
 
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(mapper.memberToMemberResponseDto(response), HttpStatus.CREATED);
     }
 
     @PatchMapping("/{member-id}")
@@ -46,15 +49,11 @@ public class MemberController {
                                       @Valid @RequestBody MemberPatchDto memberPatchDto){
         memberPatchDto.setMemberId(memberId);
 
-        Member member = new Member();
 
-        member.setMemberId(memberPatchDto.getMemberId());
-        member.setName(memberPatchDto.getName());
-        member.setPhone(memberPatchDto.getPhone());
 
-        Member response = memberService.updateMember(member);
+        Member response = memberService.updateMember(mapper.memberPatchDtoToMember(memberPatchDto));
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(mapper.memberToMemberResponseDto(response), HttpStatus.OK);
     }
 
 
@@ -62,12 +61,17 @@ public class MemberController {
     public ResponseEntity getMember(@PathVariable("member-id") long memberId) {
         Member response = memberService.findMember(memberId);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(mapper.memberToMemberResponseDto(response), HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity getMembers() {
-        List<Member> response = memberService.findMembers();
+        List<Member> members = memberService.findMembers();
+
+        List<MemberResponseDto> response =
+                members.stream()
+                        .map(member -> mapper.memberToMemberResponseDto(member))
+                        .collect(Collectors.toList());
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -83,4 +87,4 @@ public class MemberController {
 }
 
 
-//[기본] 매퍼(Mapper)를 이용한 DTO 클래스 ↔ 엔티티(Entity) 클래스 매핑 부터
+//[Spring MVC] 예외처리 처음부터
